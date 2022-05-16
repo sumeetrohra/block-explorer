@@ -1,13 +1,11 @@
 import { ethers } from "ethers";
 
-export const getLatestBlock = async (providerUrl) => {
+export const getLatestBlock = (providerUrl) => {
   const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-  const data = await provider.getBlockWithTransactions("latest");
-  return data;
+  return provider.getBlockWithTransactions("latest");
 };
 
-export const getBlock = async (providerUrl, blockNumber) => {
+export const getBlock = (providerUrl, blockNumber) => {
   const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-  const data = await provider.getBlockWithTransactions(Number(blockNumber));
-  return data;
+  return provider.getBlockWithTransactions(Number(blockNumber));
 };

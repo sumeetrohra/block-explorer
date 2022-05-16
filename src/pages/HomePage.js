@@ -1,42 +1,29 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useContext } from "react";
-import { getLatestBlock, getBlock } from "../api/block";
+import { getBlock } from "../api/block";
 import { Table } from "react-bootstrap";
 import { convertUTCToDateTime } from "../utils/date";
 import { Link } from "react-router-dom";
 import { ProviderContext } from "../JSONRPCProvider";
+import { ethers } from "ethers";
 
 const HomePage = () => {
   const [blocks, setBlocks] = useState([]);
-  const [blockNumber, setBlockNumber] = useState(-1);
   const { provider } = useContext(ProviderContext);
 
-  const handleNewBlock = (block) => {
-    if (block) {
-      setBlockNumber(block.number);
-      setBlocks((prevBlocks) => [block, ...prevBlocks]);
-    }
-  };
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (blockNumber !== -1) {
-        console.log(blockNumber);
-        getBlock(provider.url, blockNumber + 1).then((data) =>
-          handleNewBlock(data)
-        );
-      } else if (blocks.length === 0) {
-        getLatestBlock(provider.url).then((block) => handleNewBlock(block));
-      }
-    }, 5000);
-    return () => clearInterval(interval);
+    const ethProvider = new ethers.providers.JsonRpcProvider(provider.url);
+    ethProvider.on("block", (blockNumber) => {
+      getBlock(provider.url, blockNumber).then((data) =>
+        setBlocks((prevBlocks) => [data, ...prevBlocks])
+      );
+    });
+
+    return () => ethProvider.removeAllListeners();
   }, [provider.url]);
 
-  console.log(blocks, blockNumber);
-
   useEffect(() => {
-    setBlocks(() => []);
-    setBlockNumber(() => null);
+    setBlocks([]);
   }, [provider.url]);
 
   return (
